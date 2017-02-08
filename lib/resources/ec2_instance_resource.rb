@@ -21,60 +21,60 @@ module Serverspec
         content.launch_time
       end
 
-      def is_ebs_optimized?
-        content.ebs_optimized
-      end
-
-      def is_api_termination_disabled?
+      def api_termination_disabled?
         content.api_termination_disabled?
       end
 
-      def is_x86_64_architecture?
+      def x86_64_architecture?
         content.architecture == :x86_64
       end
 
-      def is_i386_architecture?
+      def i386_architecture?
         content.architecture == :i386
       end
 
-      def is_paravirtual_virtualization?
+      def paravirtual_virtualization?
         content.virtualization_type == :paravirtual
       end
 
-      def is_hvm_virtualization?
+      def hvm_virtualization?
         content.virtualization_type == :hvm
       end
 
-      def is_ebs_optimized?
+      def ebs_optimized?
         content.ebs_optimized?
       end
 
-      def is_xen_hypervisor?
+      def xen_hypervisor?
         content.hypervisor == :xen
       end
 
-      def is_oracle_vm_hypervisor?
+      def oracle_vm_hypervisor?
         content.hypervisor == :ovm
       end
 
-      def is_stop_shutdown_behavior?
+      def stop_shutdown_behavior?
         content.instance_initiated_shutdown_behavior == 'stop'
       end
 
-      def is_termination_shutdown_behavior?
+      def termination_shutdown_behavior?
         content.instance_initiated_shutdown_behavior == 'terminate'
       end
 
-      def is_monitoring_disabled?
+      def monitoring_disabled?
         content.monitoring == :disabled
       end
 
-      def is_monitoring_enabled?
+      def monitoring_enabled?
         content.monitoring == :enabled
       end
 
-      def is_monitoring_pending?
+      def monitoring_pending?
         content.monitoring == :pending
+      end
+
+      def running?
+        content.status == :running
       end
 
       # def method_missing(sym, *args, &block)
@@ -109,7 +109,7 @@ module Serverspec
         content.user_data == user_data
       end
 
-      def has_key_name?(key_name)
+      def has_key_pair?(key_name)
         content.key_name == key_name
       end
 
@@ -141,6 +141,10 @@ module Serverspec
         content.kernel_id == kernel_id
       end
 
+      def has_subnet?(subnet_id)
+        content.subnet_id == subnet_id
+      end
+
       def has_public_subnet?
         instance_subnet = AWS::EC2.new.subnets[content.subnet_id]
         instance_subnet.route_table.routes.each do |route|
@@ -160,7 +164,7 @@ module Serverspec
       end
 
       def to_s
-        "EC2 instance: #{}"
+        "EC2 instance: #{@instance_id}"
       end
     end
 
@@ -169,5 +173,23 @@ module Serverspec
       EC2Instance.new(instance_id)
     end
 
+    def ec2_running_instance_by_name(instance)
+      instance_id = nil
+      running = AWS::EC2.new.instances.select do |instance|
+        instance.status == :running
+      end
+
+      running.each do |group|
+        group.tags.to_h.each do |tag_name, tag_value|
+          if tag_name == 'Name' and tag_value == instance
+            instance_id = group.id
+          end
+        end
+      end
+
+      raise "no EC2 Running Instance found for #{instance}" if instance_id == nil 
+
+      EC2Instance.new(instance_id)
+    end
   end
 end

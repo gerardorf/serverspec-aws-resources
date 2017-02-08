@@ -79,10 +79,6 @@ module Serverspec
         content.state == :pending
       end
 
-      def cidr_block
-        content.cidr_block
-      end
-
       def attached_to_an_internet_gateway?
         not content.internet_gateway.nil?
       end
@@ -137,6 +133,14 @@ module Serverspec
         public_instances  = compute_public_instances
         result =  public_instances.select { |instance| instance unless nats_ids.include? instance.id }
         result.map { |instance| EC2Instance.new(instance.id) }
+      end
+
+      def has_connected_machines?(number)
+        content.instances.count == number
+      end
+
+      def has_cidr_block?(block)
+        content.cidr_block == block
       end
 
       private
@@ -228,6 +232,26 @@ module Serverspec
     #this is how the resource is called out in a spec
     def vpc(vpc_id)
       VPC.new(vpc_id)
+    end
+
+    def vpc_by_name(name)
+      vpc_id = nil
+      # running = AWS::EC2.new.vpcs.select do |vpc|
+      #   vpc.state == :available
+      # end
+      AWS::EC2.new.vpcs.each do |group|
+        group.tags.to_h.each do |tag_name, tag_value|
+          if tag_name == 'Name' and tag_value == name 
+            vpc_id = group.id
+          end
+        end
+      end
+
+      raise "no EC2 Running Instance found for #{instance}" if vpc_id == nil 
+
+      VPC.new(vpc_id)
+
+      
     end
   end
 end

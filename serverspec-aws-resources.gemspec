@@ -1,7 +1,7 @@
 Gem::Specification.new do |s|
   s.name        = 'serverspec-aws-resources'
-  s.version     = '0.0.7'
-  s.date        = '2016-01-12'
+  s.version     = '0.0.8'
+  s.date        = '2017-02-01'
   s.summary     = 'serverspec resource types to test AWS resources'
   s.description = s.summary
   s.authors     = %w{Eric Kascic}

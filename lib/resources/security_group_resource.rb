@@ -18,7 +18,16 @@ module Serverspec
         sg_container = Object.new
         if @sg_id.nil?
           def sg_container.security_groups
-            [find_sg_by_name_tag]
+            found_group_id = nil
+
+            AWS::EC2.new.security_groups.each do |group|
+              group.tags.to_h.each do |tag_name, tag_value|
+                if tag_name == 'Name' and tag_value == @sg_tag_name_value
+                  found_group_id = group.id
+                end
+              end
+            end
+            puts found_group_id
           end
         else
           def sg_container.security_groups

@@ -1,6 +1,12 @@
 # serverspec-aws-resources
 Some serverspec resources to allow testing AWS resources.
 
+## Build and install gem
+``` bash
+gem build serverspec-aws-resources.gemspec
+gem build serverspec-aws-resources-0.0.8.gem
+```
+
 ## Installation (when you have previous serverspec experience)
 
 The presumption here is that you have a "project" in which you have, or are intending to have
